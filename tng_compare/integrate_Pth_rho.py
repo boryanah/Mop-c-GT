@@ -49,21 +49,14 @@ rbinc_ratio = data['rbinc_ratio']
 r200m_kpcs = data['r200m_kpcs']
 mbinc_Msuns = data['mbinc_Msuns']
 r200c_kpcs = data['r200c_kpcs']
-#r200t_kpcs = data['r200t_kpcs']
+r200t_kpcs = data['r200t_kpcs']
 
 
 tSZ_one_Mpc = np.zeros(len(mbinc_Msuns))
 tSZ_two_Mpc = np.zeros(len(mbinc_Msuns))
 r_max_kpcs = np.zeros(len(mbinc_Msuns))
 for i in range(len(mbinc_Msuns)):
-    
-    # TESTING!!!!!!!!!!!!! get rid
-    if i == 0:
-        from mopc.two_halo import r_vir_kpc
-        r200t_kpcs = np.zeros(len(mbinc_Msuns))
-    r200t_kpcs[i] = r_vir_kpc(mbinc_Msuns[i], z)
-    
-
+        
     # read off
     if integrate_to == "r200m":
         r_max_kpcs[i] = r200m_kpcs[i] # kpc

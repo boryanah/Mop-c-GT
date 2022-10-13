@@ -26,6 +26,7 @@ x = np.logspace(-3., 1., 50) # same as rbinc_ratio, could grab that info from 1s
 Pth_arr = np.zeros((len(x), 2, len(mbinc)))
 r200m_kpcs = np.zeros(len(mbinc))
 r200c_kpcs = np.zeros(len(mbinc))
+r200t_kpcs = np.zeros(len(mbinc))
 mbinc_Msuns = np.zeros(len(mbinc))
 
 for myrank in range(n_ranks):
@@ -38,13 +39,14 @@ for myrank in range(n_ranks):
     #print(f"{mbinc[myrank]:.2e}")
     r200m_kpcs[myrank] = data['r200m_kpcs']
     r200c_kpcs[myrank] = data['r200c_kpcs']
+    r200t_kpcs[myrank] = data['r200t_kpcs']
     mbinc_Msuns[myrank] = data['mbinc_Msuns']
 rbinc_ratio = data['rbinc_ratio']
 
 if want_rho:
-    np.savez(f"data/rhoGNFW_z{z:.1}.npz", rho_arr=Pth_arr, rbinc_ratio=rbinc_ratio, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, mbinc_Msuns=mbinc_Msuns)
+    np.savez(f"data/rhoGNFW_z{z:.1}.npz", rho_arr=Pth_arr, rbinc_ratio=rbinc_ratio, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc_Msuns)
 else:
-    np.savez(f"data/PthGNFW_z{z:.1}.npz", Pth_arr=Pth_arr, rbinc_ratio=rbinc_ratio, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, mbinc_Msuns=mbinc_Msuns)
+    np.savez(f"data/PthGNFW_z{z:.1}.npz", Pth_arr=Pth_arr, rbinc_ratio=rbinc_ratio, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc_Msuns)
 
 for myrank in range(n_ranks):
     if want_rho:

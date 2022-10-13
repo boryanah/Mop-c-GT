@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import mopc
 from mopc.params import cosmo_params
 from mopc.cosmo import rho_cz
-from mopc.two_halo import r200m_kpc, r200c_kpc
+from mopc.two_halo import r200m_kpc, r200c_kpc, r200t_kpc
 from mopc import two_halo as two
 
 from mpi4py import MPI
@@ -50,6 +50,7 @@ if want_rho:
 # initialize virial radius array
 r200m_kpcs = np.zeros(len(mbinc))
 r200c_kpcs = np.zeros(len(mbinc))
+r200t_kpcs = np.zeros(len(mbinc))
 
 # loop over halo masses
 for k in range(len(mbinc)):
@@ -57,6 +58,7 @@ for k in range(len(mbinc)):
     m = mbinc[k]
     r200m_kpcs[k] = r200m_kpc(m, z)
     r200c_kpcs[k] = r200c_kpc(m, z)
+    r200t_kpcs[k] = r200t_kpc(m, z)
     print(f"mass = {m:.2e}", k)
     sys.stdout.flush()
     
@@ -91,6 +93,6 @@ for k in range(len(mbinc)):
     
     
 # save arrays
-np.savez(f"data/PthGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", Pth_arr=Pth_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, mbinc_Msuns=mbinc)
+np.savez(f"data/PthGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", Pth_arr=Pth_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc)
 if want_rho:
-    np.savez(f"data/rhoGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", rho_arr=rho_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, mbinc_Msuns=mbinc)
+    np.savez(f"data/rhoGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", rho_arr=rho_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc)
