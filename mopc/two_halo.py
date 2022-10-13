@@ -9,7 +9,7 @@ from colossus.cosmology import cosmology
 #params = {'flat': True, 'H0': 70., 'Om0': 0.25, 'Ob0': 0.044, 'sigma8': 0.8159, 'ns': 0.97}
 
 '''parameters used in IllustrisTNG https://arxiv.org/pdf/1703.02970.pdf'''
-params = {'flat': True, 'H0': cosmo_params['hh']*100., 'Om0': cosmo_params['Omega_m'], 'Ob0': cosmo_params['Omega_b'], 'sigma8': cosmo_params['ns'], 'ns': cosmo_params['ns']}
+params = {'flat': True, 'H0': cosmo_params['hh']*100., 'Om0': cosmo_params['Omega_m'], 'Ob0': cosmo_params['Omega_b'], 'sigma8': cosmo_params['sigma8'], 'ns': cosmo_params['ns']}
 
 cosmology.setCosmology('myCosmo',params)
 
@@ -54,7 +54,7 @@ def r_virial(M, z):
     M_cgs = M*Msol_cgs
     x = cosmo_params['Omega_m']*(1.+z)**3/(cosmo_params['Omega_m']*(1.+z)**3 + (1.-cosmo_params['Omega_m'])) - 1. #Omega_m(z) - 1
     Delta_c = 18.*(np.pi**2) + 82.*x - 39.*x*x # virial overdensity wrt critical density
-    #Delta_m = Delta_c/Omega_m(z) # wrt mean density; Delta_m = 200/0.3 = 600m so smaller than 200m
+    #Delta_m = Delta_c/Omega_m(z) # wrt mean density
     ans = (3 * M_cgs / (4 * np.pi * Delta_c*rho_cz(z)))**(1.0/3.0)
     return ans
 
@@ -89,6 +89,10 @@ def r_vir_kpc(M, z):
     ans = r_virial(M, z) # cm
     ans /=  kpc_cgs
     return ans
+
+def r200t_kpc(M, z):
+    """ TNG definition """
+    return r_vir_kpc(M, z)
 
 #From Battaglia 2016, Appendix A
 def rho_gnfw(x,m,z):
@@ -170,7 +174,6 @@ def rho_2h(r,m,z):
 
 #From Battaglia 2012, AGN Feedback Delta=200
 def Pth_gnfw(x,m,z):
-    # B.H. I've changed all the 200 to be with respect to matter and not critical (why is this fb)
     P200c = G_cgs * m*Msol_cgs * 200. * rho_cz(z) * fb /(2.*r200crit(m,z))
     P0 = 18.1 * (m/1e14)**0.154 * (1+z)**(-0.758)
     al = 1.0
