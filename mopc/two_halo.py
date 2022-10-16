@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import quad
 from .params import cosmo_params
 from hmf import MassFunction, transfer
-from colossus.lss import bias,peaks
+from colossus.lss import bias, peaks, mass_function
 from colossus.cosmology import cosmology
 
 '''set cosmology'''
@@ -11,7 +11,7 @@ from colossus.cosmology import cosmology
 '''parameters used in IllustrisTNG https://arxiv.org/pdf/1703.02970.pdf'''
 params = {'flat': True, 'H0': cosmo_params['hh']*100., 'Om0': cosmo_params['Omega_m'], 'Ob0': cosmo_params['Omega_b'], 'sigma8': cosmo_params['sigma8'], 'ns': cosmo_params['ns']}
 
-cosmology.setCosmology('myCosmo',params)
+cosmo = cosmology.setCosmology('myCosmo',params)
 
 # constants
 G_cgs = 6.67259e-8 #cm3/g/s2
@@ -117,15 +117,21 @@ def rhoFourier(k, m, z):
     ans = np.array(ans)
     return ans
 
-def hmf(m,z): # B.H. could be improved
+def hmf(m, z, mdef='200c'):
     '''Shet, Mo &  Tormen 2001'''
+    """
+    # expects h units (returns natively h^4 Msun^-1 Mpc^3
     Mmin = np.log10(np.min(m) * cosmo_params['hh'])
     Mmax = np.log10(np.max(m) * cosmo_params['hh'])
-    # expects h units (returns natively h^4 Msun^-1 Mpc^3
     return MassFunction(z=z, Mmin=Mmin, Mmax=Mmax, dlog10m=(Mmax-Mmin)/49.5, hmf_model="Behroozi").dndm * cosmo_params['hh']**4. #"SMT").dndm # "Tinker08"
+    """
+    dndlnm = mass_function.massFunction(m * cosmo_params['hh'], z, mdef=mdef, model='tinker08', q_in='M', q_out='dndlnM')
+    dndm = dndlnm / m
+    dndm *= cosmo_params['hh']**3.
+    return  dndm
     
     
-def b(m,z): # B.H. could be improved
+def b(m, z, mdef='200c'):
     '''Shet, Mo &  Tormen 2001'''
     """
     nu = peaks.peakHeight(m, z)
@@ -134,10 +140,11 @@ def b(m,z): # B.H. could be improved
     return 1.+ 1./(np.sqrt(aa)*delta_c) * (np.sqrt(aa)*aa*nu**2 + np.sqrt(aa)*bb*(aa*nu**2)**(1-cc) - ((aa*nu**2)**cc/(aa*nu**2)**cc+bb*(1-cc)*(1-cc/2)))
     """
     # expects h units
-    b = bias.haloBias(m*cosmo_params['hh'], model='tinker10', z=z, mdef='200c')
+    b = bias.haloBias(m*cosmo_params['hh'], model='tinker10', z=z, mdef=mdef)
     return b
 
-def Plin(k,z): # B.H. could be improved
+def Plin(k,z):
+    """
     lnk_min = np.log(np.min(k) / cosmo_params['hh'])
     lnk_max = np.log(np.max(k) / cosmo_params['hh'])
     dlnk = (lnk_max-lnk_min)/(49.5)
@@ -148,6 +155,9 @@ def Plin(k,z): # B.H. could be improved
     power = p.power/cosmo_params['hh']**3 # Mpc^3
     print("linear")
     #power = p.nonlinear_power/cosmo_params['hh']**3 # Mpc^3 # overshoots
+    """
+    power = cosmo.matterPowerSpectrum(k / cosmo_params['hh'], z = z)
+    power /= cosmo_params['hh']**3 # Mpc^3
     return power
 
 def rho_2h(r,m,z):
@@ -208,8 +218,8 @@ def Pth_2h(r, m, z):
     arr = np.array(arr)
     P2h = np.array(arr * b(m,z)  * Plin(k_array,z))
 
-    #then Fourier transform to get Pth_2h # B.H. shouldn't be there
-    #rcorr = 50. #Mpc/h
+    #then Fourier transform to get Pth_2h 
+    #rcorr = 50. #Mpc/h # B.H. should only affect kSZ
     integrand = lambda k: 1./(2*np.pi**2.) * k**2 * np.sin(k*r)/(k*r) * np.interp(k, k_array, P2h) # if k>1./rcorr else 0.0
     res = quad(integrand, 0.0, np.inf, epsabs=0.0, epsrel=1.e-2, limit=1000)[0]
     return res
