@@ -53,7 +53,8 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 3*NNR
+    resolution_factor = 3.0
+    NNR2 = resolution_factor*NNR
 
     #fwhm = beam
     #fwhm *= np.pi / (180.*60.)
@@ -85,8 +86,8 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:,None]
     thta2_smooth = thta2_smooth[:,None]
@@ -99,9 +100,9 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
     Pth2D = 2*np.trapz(Pth(rint,M,z,theta_p), x=rad * kpc_cgs, axis=1) * 1e3
     Pth2D2 = 2*np.trapz(Pth(rint2,M,z,theta_p), x=rad2 * kpc_cgs, axis=1) * 1e3
     
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None,None]
 
     phi = np.linspace(0., 2*np.pi, 100)
@@ -127,8 +128,8 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
             * f_beam(np.sqrt(thta2**2+thta2_smooth**2-2*thta2*thta2_smooth*np.cos(phi))) , x=phi,axis=2)
 
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
@@ -157,7 +158,8 @@ def project_prof_beam_y(tht,M,z,theta,f_beam,y_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 2*NNR
+    resolution_factor = 2.0
+    NNR2 = resolution_factor*NNR
 
     fwhm = y_beam
     fwhm *= np.pi / (180.*60.)
@@ -188,8 +190,8 @@ def project_prof_beam_y(tht,M,z,theta,f_beam,y_beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:,None]
     thta2_smooth = thta2_smooth[:,None]
@@ -204,9 +206,9 @@ def project_prof_beam_y(tht,M,z,theta,f_beam,y_beam):
     Pth2D2 = 2*np.trapz(Pth(rint2,M,z,theta_p), x=rad2 * kpc_cgs, axis=1) * 1e3
 
     
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None,None]
 
     phi = np.linspace(0., 2*np.pi, 100)
@@ -219,9 +221,9 @@ def project_prof_beam_y(tht,M,z,theta,f_beam,y_beam):
 
     thta_y = (np.arange(NNR) + 1.)*dtht
     thta2_y = (np.arange(NNR) + 1.)*dtht2
-    thta_smooth_y = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth_y = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta_y = thta_y[:,None]
-    thta2_smooth_y = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth_y = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2_y = thta2_y[:,None]
 
     rho2D_beam0 = np.trapz( thta_smooth  * rho2D  
@@ -236,8 +238,8 @@ def project_prof_beam_y(tht,M,z,theta,f_beam,y_beam):
                                  * special.iv(0, thta2_smooth_y*thta2_y/ sigmaBeam**2), x=thta2_smooth_y, axis=1)
 
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
@@ -268,7 +270,8 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 3.*NNR
+    resolution_factor = 3.0
+    NNR2 = resolution_factor*NNR
 
     #fwhm = beam #arcmin
     #fwhm *= np.pi / (180.*60.) #rad
@@ -297,8 +300,8 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:,None]
     thta2_smooth = thta2_smooth[:,None]
@@ -309,9 +312,9 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     rho2D = 2*np.trapz(rho_gnfw(rint,M,z,theta_sim_rho), x=rad * kpc_cgs, axis=1) * 1e3
     rho2D2 = 2*np.trapz(rho_gnfw(rint2,M,z,theta_sim_rho), x=rad2 * kpc_cgs, axis=1) * 1e3
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None,None]
 
     phi = np.linspace(0., 2*np.pi, 100)
@@ -328,8 +331,8 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     rho2D2_beam0 = np.trapz( thta2_smooth  * rho2D2  
             * f_beam(np.sqrt(thta2**2+thta2_smooth**2-2*thta2*thta2_smooth*np.cos(phi))) , x=phi,axis=2)
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
@@ -342,7 +345,7 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     sig  = 2.0*np.pi*dtht *np.sum(thta *rho2D_beam)
     sig2 = 2.0*np.pi*dtht2*np.sum(thta2*rho2D2_beam)
 
-    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((2. + 2.*XH)/(3.+5.*XH)) / MP_CGS #/ (np.pi * np.radians(tht/60.)**2)
+    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((1. + XH)/2.) / MP_CGS #/ (np.pi * np.radians(tht/60.)**2)
 
     return sig_all_beam
 
@@ -350,7 +353,8 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 3.*NNR
+    resolution_factor = 3.0
+    NNR2 = resolution_factor*NNR
 
     #fwhm = beam #arcmin
     #fwhm *= np.pi / (180.*60.) #rad
@@ -380,8 +384,8 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:, None]
     thta2_smooth = thta2_smooth[:, None]
@@ -395,9 +399,9 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     rho2D = 2*np.trapz((rho_dm(rint, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1)
     rho2D2 = 2*np.trapz((rho_dm(rint2, M, z, 10.)+rho_dm_2h(rint)), x=rad2 * 1e3 * kpc_cgs, axis=1)
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None,None]
     
     phi = np.linspace(0., 2*np.pi, 100)
@@ -414,8 +418,8 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     rho2D2_beam0 = np.trapz( thta2_smooth  * rho2D2  
             * f_beam(np.sqrt(thta2**2+thta2_smooth**2-2*thta2*thta2_smooth*np.cos(phi))) , x=phi,axis=2)
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
@@ -429,9 +433,7 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     sig  = 2.0*np.pi*dtht *np.sum(thta *rho2D_beam)
     sig2 = 2.0*np.pi*dtht2*np.sum(thta2*rho2D2_beam)
 
-    # subtraction is right cause we want annulus
-    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((2. + 2.*XH)/(3.+5.*XH)) / MP_CGS # uK rad^2
-    #/ (np.pi * np.radians(tht/60.)**2)
+    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((1. + XH)/2.) / MP_CGS #uK rad^2 / (np.pi * np.radians(tht/60.)**2)
 
     return sig_all_beam
 
@@ -441,7 +443,8 @@ def project_prof_beam_sim_pth(tht,M,z,theta_pth,nu,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 3.5*NNR
+    resolution_factor = 3.5
+    NNR2 = resolution_factor*NNR
 
     #fwhm = beam
     #fwhm *= np.pi / (180.*60.)
@@ -473,8 +476,8 @@ def project_prof_beam_sim_pth(tht,M,z,theta_pth,nu,f_beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:,None]
     thta2_smooth = thta2_smooth[:,None]
@@ -485,9 +488,9 @@ def project_prof_beam_sim_pth(tht,M,z,theta_pth,nu,f_beam):
     Pth2D = 2*np.trapz(Pth_gnfw(rint,M,z,theta_sim_pth), x=rad * kpc_cgs, axis=1) * 1e3
     Pth2D2 = 2*np.trapz(Pth_gnfw(rint2,M,z,theta_sim_pth), x=rad2 * kpc_cgs, axis=1) * 1e3
     
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None,None]
     phi = np.linspace(0., 2*np.pi, 50)
     phi = phi[None,None,:]
@@ -502,8 +505,8 @@ def project_prof_beam_sim_pth(tht,M,z,theta_pth,nu,f_beam):
     Pth2D2_beam0 = np.trapz( thta2_smooth  * Pth2D2  
             * f_beam(np.sqrt(thta2**2+thta2_smooth**2-2*thta2*thta2_smooth*np.cos(phi))) , x=phi,axis=2)
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     Pth2D_beam = np.trapz(Pth2D_beam0, x=thta_smooth,axis=1)
     Pth2D2_beam = np.trapz(Pth2D2_beam0, x=thta2_smooth,axis=1)
@@ -527,7 +530,8 @@ def project_prof_beam_sim_y(tht,M,z,theta_pth, beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    NNR2 = 3.5*NNR
+    resolution_factor = 3.5
+    NNR2 = resolution_factor*NNR
 
     fwhm = beam
     fwhm *= np.pi / (180.*60.)
@@ -557,8 +561,8 @@ def project_prof_beam_sim_y(tht,M,z,theta_pth, beam):
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
     thta_smooth = thta_smooth[:,None]
     thta2_smooth = thta2_smooth[:,None]
@@ -569,9 +573,9 @@ def project_prof_beam_sim_y(tht,M,z,theta_pth, beam):
     Pth2D = 2*np.trapz(Pth_gnfw(rint,M,z,theta_sim_pth), x=rad * kpc_cgs, axis=1) * 1e3
     Pth2D2 = 2*np.trapz(Pth_gnfw(rint2,M,z,theta_sim_pth), x=rad2 * kpc_cgs, axis=1) * 1e3
 
-    thta_smooth = (np.arange(NNR2) + 1.)*dtht
+    thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None]
-    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
+    thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
     thta2 = thta2[:,None]
 
     Pth2D_beam  = np.trapz(thta_smooth  * Pth2D  * np.exp(-0.5*thta_smooth**2 /sigmaBeam**2)
