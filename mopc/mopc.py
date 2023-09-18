@@ -270,7 +270,7 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    resolution_factor = 3.0
+    resolution_factor = 4.0
     NNR2 = resolution_factor*NNR
 
     #fwhm = beam #arcmin
@@ -285,9 +285,6 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     r_ext = AngDis*np.arctan(np.radians(tht/60.))
     r_ext2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
 
-    # B.H.
-    #rad = np.logspace(-3, 2., 200) #Mpc
-    #rad2 = np.logspace(-3, 2.,200)
     rad = np.logspace(-3, 1., 200) #Mpc
     rad2 = np.logspace(-3, 1.,200)
     
@@ -336,7 +333,6 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
 
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
-
     
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
@@ -344,7 +340,7 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     area_fac = 2.0*np.pi*dtht*np.sum(thta)
     sig  = 2.0*np.pi*dtht *np.sum(thta *rho2D_beam)
     sig2 = 2.0*np.pi*dtht2*np.sum(thta2*rho2D2_beam)
-
+    
     sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((1. + XH)/2.) / MP_CGS #/ (np.pi * np.radians(tht/60.)**2)
 
     return sig_all_beam
@@ -353,7 +349,7 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
-    resolution_factor = 3.0
+    resolution_factor = 4.
     NNR2 = resolution_factor*NNR
 
     #fwhm = beam #arcmin
@@ -369,13 +365,10 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
 
     AngDis = AngDist(z) # Mpc
 
-    radlim = AngDis*np.arctan(np.radians(tht/60.))
+    radlim = AngDis*np.arctan(np.radians(tht/60.)) # Mpc
     radlim2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
 
-    # B.H. 1
-    #rad = np.logspace(-3, 2., 200) # Mpc
-    #rad2 = np.logspace(-3, 2., 200)
-    rad = np.logspace(-3, 1., 200) #Mpc
+    rad = np.logspace(-3, 1., 200) # Mpc
     rad2 = np.logspace(-3, 1.,200)
     
     dtht = np.arctan(radlim/AngDis)/NNR # rad
@@ -393,12 +386,17 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     rint  = np.sqrt(rad**2 + thta_smooth**2 *AngDis**2) # Mpc
     rint2  = np.sqrt(rad2**2 + thta2_smooth**2 *AngDis**2)
 
-    # B.H.
-    #rho2D = 2*np.trapz((rho_dm_x(rint/rs, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1)
+    # integral over dl where l is los
+    # same as below just different parametrization
+    #rho2D = 2*np.trapz((rho_dm_x(rint/rs, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1) # g/cm^2
     #rho2D2 = 2*np.trapz((rho_dm_x(rint2/rs, M, z, 10.)+rho_dm_2h(rint)), x=rad2 * 1e3 * kpc_cgs, axis=1)
-    rho2D = 2*np.trapz((rho_dm(rint, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1)
-    rho2D2 = 2*np.trapz((rho_dm(rint2, M, z, 10.)+rho_dm_2h(rint)), x=rad2 * 1e3 * kpc_cgs, axis=1)
-
+    # this looks best when comparing with sims: 1.xR200c and 2h
+    rho2D = 2*np.trapz((rho_dm(rint, M, z, 1.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1) # g/cm^2 
+    rho2D2 = 2*np.trapz((rho_dm(rint2, M, z, 1.)+rho_dm_2h(rint2)), x=rad2 * 1e3 * kpc_cgs, axis=1)
+    # paper claims 1. virial radius (R200c) (and 10. would be the second line in Schaan)
+    #rho2D = 2*np.trapz((rho_dm(rint, M, z, 1.)), x=rad * 1e3 * kpc_cgs, axis=1) # g/cm^2
+    #rho2D2 = 2*np.trapz((rho_dm(rint2, M, z, 1.)), x=rad2 * 1e3 * kpc_cgs, axis=1)
+    
     thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta = thta[:,None,None]
     thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
@@ -411,7 +409,8 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
 
     rho2D = rho2D[None,:,None]
     rho2D2 = rho2D2[None,:,None]
-   
+
+    # dphi integral with cosine theorem and note that beam depends only on magnitude of theta which is |theta vec - theta' vec|
     rho2D_beam0 = np.trapz( thta_smooth  * rho2D  
             * f_beam(np.sqrt(thta**2+thta_smooth**2-2*thta*thta_smooth*np.cos(phi))) , x=phi,axis=2)
     
@@ -421,9 +420,10 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     thta_smooth = (np.arange(NNR2) + 1.)*dtht/resolution_factor
     thta2_smooth = (np.arange(NNR2) + 1.)*dtht2/resolution_factor
 
+    # r dr integral (i.e. theta' dtheta')
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
- 
+    
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
@@ -432,8 +432,9 @@ def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     # rho_2d_conv(r) 2 pi r dr 
     sig  = 2.0*np.pi*dtht *np.sum(thta *rho2D_beam)
     sig2 = 2.0*np.pi*dtht2*np.sum(thta2*rho2D2_beam)
-
-    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((1. + XH)/2.) / MP_CGS #uK rad^2 / (np.pi * np.radians(tht/60.)**2)
+    
+    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((1. + XH)/2.) / MP_CGS #uK rad^2
+    # / (np.pi * np.radians(tht/60.)**2) # cause when doing it on the cmb map, we integrate over area
 
     return sig_all_beam
 
@@ -636,10 +637,10 @@ def make_a_obs_profile_sim_rho(thta_arc,M,z,theta_rho,f_beam):
         rho[ii] = temp
     return rho
 
-def make_a_obs_profile_rho_dm(thta_arc,M,z,f_beam):
+def make_a_obs_profile_rho_dm(thta_arc,M,z,rho_dm_2h,f_beam):
     rho = np.zeros(len(thta_arc))
     for ii in range(len(thta_arc)):
-        temp = project_prof_beam_rho_dm(thta_arc[ii],M,z,f_beam)
+        temp = project_prof_beam_rho_dm(thta_arc[ii],M,z,rho_dm_2h,f_beam)
         rho[ii] = temp
     return rho
 

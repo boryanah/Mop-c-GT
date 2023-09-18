@@ -37,7 +37,7 @@ def rho_gnfw1h(x, M, z, theta):
         gm = -0.2
         rho0,xc,bt = theta
         #rho0,al,bt = theta
-        ans = 10**rho0 * (xx/xc)**gm / ((1 + (xx/xc)**al)**((bt-gm)/al))
+        ans = 10**rho0 * (xx/xc)**gm / ((1 + (xx/xc)**al)**((bt+gm)/al)) # typo B.H.
         ans *= rho_cz(z) * fb
         return ans
     else:
@@ -60,17 +60,25 @@ def rho_gnfw1h(x, M, z, theta):
         gm = -0.2
         #rho0,al,bt = theta
         rho0,xc,bt = theta
-        rho.append(10**rho0 * (x/rvir/xc)**gm / ((1 + (x/rvir/xc)**al)**((bt-gm)/al))*rho_cz(z) * fb)   
+        rho.append(10**rho0 * (x/rvir/xc)**gm / ((1 + (x/rvir/xc)**al)**((bt+gm)/al))*rho_cz(z) * fb)    # B.H. typo
     rho = np.array(rho)
     rho_av = np.average(rho, weights=p, axis=0)
     return rho_av
 
 
 def rho_gnfw2h(xx,theta2h):
+    # TODO B.H. please change this, it makes me cry
+    """
     rho_file = np.genfromtxt('/home/boryanah/repos/Mop-c-GT/data/twohalo_cmass_average.txt')
     x1 = rho_file[:,0]
     rho2h = rho_file[:,1]
     ans = np.interp(xx,x1,rho2h)
+    """
+    #data = np.load("data/rho_2h_gnfw_cmass.npz") # Mpc, Msun, g/cm^3
+    data = np.load("data/rho_2h_gnfw_cmass_fit.npz") # Mpc, Msun, g/cm^3
+    x1 = data['r'] # Mpc
+    rho2h = data['rho_2h'] # g/cm^3
+    ans = np.interp(xx,x1,rho2h)       
     return theta2h * ans
 
 def rho_gnfw(xx,M,z,theta):

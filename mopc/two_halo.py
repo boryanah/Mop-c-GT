@@ -129,24 +129,26 @@ def rho_2h_nfw(r,m,z):
     return res
 
 #From Battaglia 2016, Appendix A
-def rho_gnfw(x,m,z):
+def rho_gnfw(x,m,z,theta):
     rho200c = rho_cz(z)*fb
-    rho0 = 4e3 * (m/1e14)**0.29 * (1+z)**(-0.66)
     al = 0.88 * (m/1e14)**(-0.03) * (1+z)**0.19
+    gm = -0.2
+    """
+    rho0 = 4e3 * (m/1e14)**0.29 * (1+z)**(-0.66)
     bt = 3.83 * (m/1e14)**0.04 * (1+z)**(-0.025)
     xc = 0.5
-    gm = -0.2
-    #ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt-gm)/al)
-    ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt+gm)/al)
+    """
+    rho0,xc,bt = theta
+    ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt+gm)/al) # B.H. typo
     ans *= rho200c
     return ans
 
-def rhoFourier(k, m, z):
+def rhoFourier(k, m, z, theta):
     ans = []
     for i in range(len(m)):
         r200c = r200crit(m[i],z)/kpc_cgs/1e3
         rvir = r_virial(m[i],z)/kpc_cgs/1e3
-        integrand = lambda r: 4.*np.pi*r**2*rho_gnfw(r/r200c,m[i],z) * np.sin(k * r)/(k*r)
+        integrand = lambda r: 4.*np.pi*r**2*rho_gnfw(r/r200c,m[i],z,theta) * np.sin(k * r)/(k*r)
         res = quad(integrand, 0., 3*rvir, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally B.H.
         ans.append(res)
     ans = np.array(ans)
@@ -193,7 +195,7 @@ def Plin(k,z):
     """
     return power
 
-def rho_2h(r,m,z):
+def rho_2h(r,m,z,theta):
 
     #first compute P_2h (power spectrum)
     m_array = np.logspace(np.log10(1.e10), np.log10(1.e15), 50, 10.) # Msun
@@ -203,7 +205,7 @@ def rho_2h(r,m,z):
 
     arr = []
     for i in range(len(k_array)):
-        arr.append(np.trapz(hmf_array[i,:]*bias_array[i,:]*rhoFourier(k_array[i],m_array,z),m_array))
+        arr.append(np.trapz(hmf_array[i,:]*bias_array[i,:]*rhoFourier(k_array[i],m_array,z,theta),m_array))
     arr = np.array(arr)
     P2h = np.array(arr * b(m,z)  * Plin(k_array,z))
 
