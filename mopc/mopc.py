@@ -4,7 +4,7 @@ from scipy.signal import convolve
 from .params import cosmo_params
 from .cosmo import AngDist
 from .gnfw import r200, rho_gnfw1h, Pth_gnfw1h, rho_gnfw, Pth_gnfw
-from .obb import con, fstar_func, return_prof_pars, rho, Pth, rho1h_one_mass, Pth1h_one_mass, rho_dm, rho_dm_x, rho_dm_weird
+from .obb import con, fstar_func, return_prof_pars, rho, Pth, rho1h_one_mass, Pth1h_one_mass, rho_dm, rho_dm_x, rho_dm_og
 from .obb import con, fstar_func, return_prof_pars, rho, Pth #, rho1h_one_mass, Pth1h_one_mass
 import matplotlib.pyplot as plt
 import time
@@ -346,7 +346,7 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
 
     return sig_all_beam
 
-def project_prof_beam_rho_dm(tht,M,z,f_beam):
+def project_prof_beam_rho_dm(tht,M,z,rho_dm_2h,f_beam):
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
@@ -390,10 +390,10 @@ def project_prof_beam_rho_dm(tht,M,z,f_beam):
     rint2  = np.sqrt(rad2**2 + thta2_smooth**2 *AngDis**2)
 
     # B.H.
-    #rho2D = 2*np.trapz(rho_dm_x(rint/rs, M, z), x=rad * 1e3 * kpc_cgs, axis=1)
-    #rho2D2 = 2*np.trapz(rho_dm_x(rint2/rs, M, z), x=rad2 * 1e3 * kpc_cgs, axis=1)
-    rho2D = 2*np.trapz(rho_dm(rint, M, z, 1.), x=rad * 1e3 * kpc_cgs, axis=1)
-    rho2D2 = 2*np.trapz(rho_dm(rint2, M, z, 1.), x=rad2 * 1e3 * kpc_cgs, axis=1)
+    #rho2D = 2*np.trapz((rho_dm_x(rint/rs, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1)
+    #rho2D2 = 2*np.trapz((rho_dm_x(rint2/rs, M, z, 10.)+rho_dm_2h(rint)), x=rad2 * 1e3 * kpc_cgs, axis=1)
+    rho2D = 2*np.trapz((rho_dm(rint, M, z, 10.)+rho_dm_2h(rint)), x=rad * 1e3 * kpc_cgs, axis=1)
+    rho2D2 = 2*np.trapz((rho_dm(rint2, M, z, 10.)+rho_dm_2h(rint)), x=rad2 * 1e3 * kpc_cgs, axis=1)
 
     thta_smooth = (np.arange(NNR2) + 1.)*dtht
     thta = thta[:,None,None]

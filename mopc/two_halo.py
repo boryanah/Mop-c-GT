@@ -4,6 +4,7 @@ I think this is now completely independent of the rest of mop-c-gt
 import numpy as np
 from scipy.integrate import quad
 from .params import cosmo_params
+from .obb import rho_dm
 from hmf import MassFunction, transfer
 from colossus.lss import bias, peaks, mass_function
 from colossus.cosmology import cosmology
@@ -96,6 +97,36 @@ def r_vir_kpc(M, z):
 def r200t_kpc(M, z):
     """ TNG definition """
     return r_vir_kpc(M, z)
+
+def rhoFourier_nfw(k, m, z):
+    ans = []
+    for i in range(len(m)):
+        r200c = r200crit(m[i],z)/kpc_cgs/1e3 # Mpc
+        rvir = r_virial(m[i],z)/kpc_cgs/1e3 # Mpc
+        integrand = lambda r: 4.*np.pi*r**2*rho_dm(r,m[i],z,10.) * np.sin(k * r)/(k*r)
+        res = quad(integrand, 0., 10*r200c, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally B.H.
+        ans.append(res)
+    ans = np.array(ans)
+    return ans
+
+def rho_2h_nfw(r,m,z):
+
+    #first compute P_2h (power spectrum)
+    m_array = np.logspace(np.log10(1.e10), np.log10(1.e15), 50, 10.) # Msun
+    k_array = np.logspace(np.log10(1.e-3), np.log10(1.e3), 50, 10.) # 1/Mpc
+    hmf_array = np.array([hmf(m_array,z)]*len(k_array)).reshape(len(k_array),len(hmf(m_array,z)))
+    bias_array = np.array([b(m_array,z)]*len(k_array)).reshape(len(k_array),len(b(m_array,z)))
+
+    arr = []
+    for i in range(len(k_array)):
+        arr.append(np.trapz(hmf_array[i,:]*bias_array[i,:]*rhoFourier_nfw(k_array[i],m_array,z),m_array))
+    arr = np.array(arr)
+    P2h = np.array(arr * b(m,z)  * Plin(k_array,z))
+
+    #then Fourier transform to get rho_2h
+    integrand = lambda k: 1./(2*np.pi**2.) * k**2 * np.sin(k*r)/(k*r) * np.interp(k, k_array, P2h) 
+    res = quad(integrand, 0.0, np.inf, epsabs=0.0, epsrel=1.e-2, limit=1000)[0]
+    return res
 
 #From Battaglia 2016, Appendix A
 def rho_gnfw(x,m,z):

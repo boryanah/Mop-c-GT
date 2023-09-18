@@ -77,30 +77,21 @@ def con(M, z):
     ans = 5.71 / (1 + z)**(0.47) * (M / 2e12)**(-0.084)
     return ans
 
-def rho_gnfw2h(xx,theta2h):
-    fb = 0.16
-    h = 0.7
-    rho_file = np.genfromtxt('/home/boryanah/repos/Mop-c-GT/data/twohalo_cmass_average.txt')
-    x1 = rho_file[:,0]
-    x1 /= h # Mpc
-    rho2h = rho_file[:,1]
-    ans = np.interp(xx,x1,rho2h)
-    return theta2h * ans/fb
-
-def rho_dm_x(x,M,z):
+def rho_dm_x(x,M,z,trunc):
     #NFW profile describing the dark matter density [g/cm3]
     #
-    print("the one with rho(x)")
     c = con(M,z)
     rvir = r200(M,z)
     M_cgs = M*Msol_cgs
     ans = M_cgs*(c/rvir)**3 / (4.*np.pi*gx(c)) * nfw(x)
-    ans[x > c] = 0.
+    if isinstance(x, float):
+        if x > trunc*c: ans = 0.
+    else:
+        ans[x > trunc*c] = 0.
     return ans
 
 def rho_dm(r,M,z,trunc):
     #input: r in Mpc M in Msun, trunc in rvir units
-    print("the sensible one")
     c = con(M,z)
     rvir = r200(M,z) #cgs
     rs = rvir / c #cgs
@@ -109,16 +100,16 @@ def rho_dm(r,M,z,trunc):
     rhoS /= np.log(1.+c) - c/(1.+c)
     x = r*kpc_cgs*1e3 / rs
     ans =  rhoS / (x*(1.+x)**2)
-    #ans[x > trunc*c] = 0.
-    # TESTING! I think needs to be changed
-    #ans += rho_gnfw2h(r, 1.)
+    if isinstance(x, float):
+        if x > trunc*c: ans = 0.
+    else:
+        ans[x > trunc*c] = 0.
     return ans
 
-def rho_dm_weird(r,M,z,trunc):
+def rho_dm_og(r,M,z,trunc):
     #input: r in Mpc M in Msun, trunc in rvir units
     #mhalo = np.array([[12.27689266, 12.67884686, 13.16053855, 13.69871423]]).T        #CMASS
     #pm = np.array([4.13431979e-03, 1.31666601e-01, 3.36540698e-01, 8.13760167e-02])   #CMASS
-    print("the weird one")
     mhalo = np.array([[13.06930356, 13.32095674, 13.58460136, 13.85897045]]).T
     pm = np.array([0.03441325, 0.14584457, 0.41102333, 0.15162467])
     rhow = []
@@ -133,7 +124,10 @@ def rho_dm_weird(r,M,z,trunc):
         rhoS /= np.log(1.+c) - c/(1.+c)
         x = r*kpc_cgs*1e3 / rs
         ans =  rhoS / (x*(1.+x)**2)
-        ans[x > trunc*c] = 0.
+        if isinstance(x, float):
+            if x > trunc*c: ans = 0.
+        else:
+            ans[x > trunc*c] = 0.
         rhow.append(ans)
     rho = np.average(rhow, weights=pm, axis = 0)
     return rho
