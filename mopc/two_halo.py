@@ -1,3 +1,6 @@
+"""
+I think this is now completely independent of the rest of mop-c-gt
+"""
 import numpy as np
 from scipy.integrate import quad
 from .params import cosmo_params
@@ -102,7 +105,8 @@ def rho_gnfw(x,m,z):
     bt = 3.83 * (m/1e14)**0.04 * (1+z)**(-0.025)
     xc = 0.5
     gm = -0.2
-    ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt-gm)/al)
+    #ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt-gm)/al)
+    ans = rho0 * (x/xc)**gm * (1+(x/xc)**al)**(-(bt+gm)/al)
     ans *= rho200c
     return ans
 
@@ -112,7 +116,7 @@ def rhoFourier(k, m, z):
         r200c = r200crit(m[i],z)/kpc_cgs/1e3
         rvir = r_virial(m[i],z)/kpc_cgs/1e3
         integrand = lambda r: 4.*np.pi*r**2*rho_gnfw(r/r200c,m[i],z) * np.sin(k * r)/(k*r)
-        res = quad(integrand, 0., 10*rvir, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally B.H.
+        res = quad(integrand, 0., 3*rvir, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally B.H.
         ans.append(res)
     ans = np.array(ans)
     return ans
@@ -144,20 +148,18 @@ def b(m, z, mdef='200c'):
     return b
 
 def Plin(k,z):
-    """
+    # expects h units
     lnk_min = np.log(np.min(k) / cosmo_params['hh'])
     lnk_max = np.log(np.max(k) / cosmo_params['hh'])
     dlnk = (lnk_max-lnk_min)/(49.5)
     '''Eisenstein & Hu (1998)'''
-    # expects h units
     p = transfer.Transfer(sigma_8=params['sigma8'], n=params['ns'], z=z, lnk_min=lnk_min, lnk_max=lnk_max, dlnk=dlnk, transfer_model="CAMB")#"EH")
-    #power = np.exp(p.power)/cosmo_params['hh']**3 # acc to docs but wrong
-    power = p.power/cosmo_params['hh']**3 # Mpc^3
-    print("linear")
-    #power = p.nonlinear_power/cosmo_params['hh']**3 # Mpc^3 # overshoots
+    #power = p.power/cosmo_params['hh']**3 # Mpc^3
+    power = p.nonlinear_power/cosmo_params['hh']**3 # Mpc^3 # overshoots
     """
     power = cosmo.matterPowerSpectrum(k / cosmo_params['hh'], z = z)
     power /= cosmo_params['hh']**3 # Mpc^3
+    """
     return power
 
 def rho_2h(r,m,z):
@@ -200,7 +202,7 @@ def PthFourier(k, m, z):
         r200c = r200crit(m[i],z)/kpc_cgs/1e3
         rvir = r_virial(m[i],z)/kpc_cgs/1e3
         integrand = lambda r: 4.*np.pi*r**2*Pth_gnfw(r/r200c,m[i],z) * np.sin(k * r)/(k*r)
-        res = quad(integrand, 0., 10*rvir, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally # B.H.
+        res = quad(integrand, 0., 3*rvir, epsabs=0.0, epsrel=1.e-4, limit=10000)[0] # 10 times r200c originally # B.H.
         ans.append(res)
     ans = np.array(ans)
     return ans

@@ -9,7 +9,7 @@ python combine_Pth_rho.py 22 0.5
 """
 
 # choices
-want_rho = False
+want_rho = True
 n_ranks = int(sys.argv[1])
 z = float(sys.argv[2]) # 0.3, 0.5
 

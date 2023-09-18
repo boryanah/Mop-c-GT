@@ -1,14 +1,15 @@
 import numpy as np
 
-"""
-cosmo_params = {
 
+cosmo_params = {
 	'Omega_m':0.25,
-	'hh':0.7,
+	'hh':0.72,
 	'Omega_L':0.75,
-	'Omega_b':0.044,
+	'Omega_b':0.043,
 	'rhoc_0':2.77525e2,
-	'C_OVER_HUBBLE':2997.9
+	'C_OVER_HUBBLE':2997.9,
+    'sigma8': 0.8,
+    'ns': 0.96
 }
 """
 cosmo_params = {
@@ -19,7 +20,7 @@ cosmo_params = {
         'ns': 0.9649,
         'sigma8': 0.8159
 }
-
+"""
 Msol_cgs = 1.989e33
 G_cgs = 6.67259e-8
 c_kms = 299792.458 

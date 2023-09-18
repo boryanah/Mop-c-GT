@@ -4,7 +4,7 @@ from scipy.signal import convolve
 from .params import cosmo_params
 from .cosmo import AngDist
 from .gnfw import r200, rho_gnfw1h, Pth_gnfw1h, rho_gnfw, Pth_gnfw
-from .obb import con, fstar_func, return_prof_pars, rho, Pth, rho1h_one_mass, Pth1h_one_mass, rho_dm
+from .obb import con, fstar_func, return_prof_pars, rho, Pth, rho1h_one_mass, Pth1h_one_mass, rho_dm, rho_dm_x, rho_dm_weird
 from .obb import con, fstar_func, return_prof_pars, rho, Pth #, rho1h_one_mass, Pth1h_one_mass
 import matplotlib.pyplot as plt
 import time
@@ -69,8 +69,8 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
     rvir = r200(M,z)/kpc_cgs/1e3 #in MPC
     c = con(M,z)
 
-    r_ext = AngDis*np.arctan(np.radians(tht/60.))
-    r_ext2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
+    radlim = AngDis*np.arctan(np.radians(tht/60.))
+    radlim2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
 
     rvir_arcmin = 180.*60./np.pi * np.tan(rvir/AngDis) #arcmin
     rvir_ext = AngDis*np.arctan(np.radians(rvir_arcmin/60.))
@@ -78,9 +78,6 @@ def project_prof_beam(tht,M,z,theta,nu,f_beam):
 
     rad = np.logspace(-3, 1, 200) #in MPC
     rad2 = np.logspace(-3, 1, 200) #in MPC
-
-    radlim = r_ext
-    radlim2 = r_ext2
 
     dtht = np.arctan(radlim/AngDis)/NNR # rads
     dtht2 = np.arctan(radlim2/AngDis)/NNR # rads
@@ -285,9 +282,12 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     r_ext = AngDis*np.arctan(np.radians(tht/60.))
     r_ext2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
 
-    rad = np.logspace(-3, 1, 200) #Mpc
-    rad2 = np.logspace(-3, 1,200)
-
+    # B.H.
+    #rad = np.logspace(-3, 2., 200) #Mpc
+    #rad2 = np.logspace(-3, 2.,200)
+    rad = np.logspace(-3, 1., 200) #Mpc
+    rad2 = np.logspace(-3, 1.,200)
+    
     radlim = r_ext
     radlim2 = r_ext2
 
@@ -347,7 +347,6 @@ def project_prof_beam_sim_rho(tht,M,z,theta_rho,f_beam):
     return sig_all_beam
 
 def project_prof_beam_rho_dm(tht,M,z,f_beam):
-
     disc_fac = np.sqrt(2)
     l0 = 30000.
     NNR = 100
@@ -357,25 +356,26 @@ def project_prof_beam_rho_dm(tht,M,z,f_beam):
     #fwhm *= np.pi / (180.*60.) #rad
     #sigmaBeam = fwhm / np.sqrt(8.*np.log(2.))
 
-    rvir = r200(M,z)/kpc_cgs/1e3 #Mpc
+    rvir = r200(M,z)/kpc_cgs/1e3 # Mpc
     c = con(M,z)
+    rs = rvir/c
 
-    drint = 1e-3 * (kpc_cgs * 1e3)
+    drint = 1e-3 * (kpc_cgs * 1e3) # not used
     XH = 0.76
 
-    AngDis = AngDist(z)
+    AngDis = AngDist(z) # Mpc
 
-    r_ext = AngDis*np.arctan(np.radians(tht/60.))
-    r_ext2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
+    radlim = AngDis*np.arctan(np.radians(tht/60.))
+    radlim2 = AngDis*np.arctan(np.radians(tht*disc_fac/60.))
 
-    rad = np.logspace(-3, 1, 200) #Mpc
-    rad2 = np.logspace(-3, 1,200)
-
-    radlim = r_ext
-    radlim2 = r_ext2
-
-    dtht = np.arctan(radlim/AngDis)/NNR # rads
-    dtht2 = np.arctan(radlim2/AngDis)/NNR # rads
+    # B.H. 1
+    #rad = np.logspace(-3, 2., 200) # Mpc
+    #rad2 = np.logspace(-3, 2., 200)
+    rad = np.logspace(-3, 1., 200) #Mpc
+    rad2 = np.logspace(-3, 1.,200)
+    
+    dtht = np.arctan(radlim/AngDis)/NNR # rad
+    dtht2 = np.arctan(radlim2/AngDis)/NNR
 
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
@@ -383,14 +383,17 @@ def project_prof_beam_rho_dm(tht,M,z,f_beam):
     thta_smooth = (np.arange(NNR2) + 1.)*dtht
     thta2_smooth = (np.arange(NNR2) + 1.)*dtht2
 
-    thta_smooth = thta_smooth[:,None]
-    thta2_smooth = thta2_smooth[:,None]
+    thta_smooth = thta_smooth[:, None]
+    thta2_smooth = thta2_smooth[:, None]
 
-    rint  = np.sqrt(rad**2 + thta_smooth**2 *AngDis**2)
+    rint  = np.sqrt(rad**2 + thta_smooth**2 *AngDis**2) # Mpc
     rint2  = np.sqrt(rad2**2 + thta2_smooth**2 *AngDis**2)
 
-    rho2D = 2*np.trapz(rho_dm(rint,M,z), x=rad * kpc_cgs, axis=1) * 1e3
-    rho2D2 = 2*np.trapz(rho_dm(rint2,M,z), x=rad2 * kpc_cgs, axis=1) * 1e3
+    # B.H.
+    #rho2D = 2*np.trapz(rho_dm_x(rint/rs, M, z), x=rad * 1e3 * kpc_cgs, axis=1)
+    #rho2D2 = 2*np.trapz(rho_dm_x(rint2/rs, M, z), x=rad2 * 1e3 * kpc_cgs, axis=1)
+    rho2D = 2*np.trapz(rho_dm(rint, M, z, 1.), x=rad * 1e3 * kpc_cgs, axis=1)
+    rho2D2 = 2*np.trapz(rho_dm(rint2, M, z, 1.), x=rad2 * 1e3 * kpc_cgs, axis=1)
 
     thta_smooth = (np.arange(NNR2) + 1.)*dtht
     thta = thta[:,None,None]
@@ -417,16 +420,18 @@ def project_prof_beam_rho_dm(tht,M,z,f_beam):
     rho2D_beam = np.trapz(rho2D_beam0, x=thta_smooth,axis=1)
     rho2D2_beam = np.trapz(rho2D2_beam0, x=thta2_smooth,axis=1)
  
-    
     thta = (np.arange(NNR) + 1.)*dtht
     thta2 = (np.arange(NNR) + 1.)*dtht2
 
     area_fac = 2.0*np.pi*dtht*np.sum(thta)
 
+    # rho_2d_conv(r) 2 pi r dr 
     sig  = 2.0*np.pi*dtht *np.sum(thta *rho2D_beam)
     sig2 = 2.0*np.pi*dtht2*np.sum(thta2*rho2D2_beam)
 
-    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((2. + 2.*XH)/(3.+5.*XH)) / MP_CGS #/ (np.pi * np.radians(tht/60.)**2)
+    # subtraction is right cause we want annulus
+    sig_all_beam = (2*sig - sig2) * v_rms * ST_CGS * TCMB * 1e6 * ((2. + 2.*XH)/(3.+5.*XH)) / MP_CGS # uK rad^2
+    #/ (np.pi * np.radians(tht/60.)**2)
 
     return sig_all_beam
 

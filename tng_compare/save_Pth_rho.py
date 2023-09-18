@@ -19,7 +19,6 @@ n_ranks = int(sys.argv[1])
 # constants
 Msol_cgs = 1.989e33
 G_cgs = 6.67259e-8 #cm3/g/s2
-fb = cosmo_params['Omega_b']/cosmo_params['Omega_m']
 
 # construct mass bins
 logbins = np.linspace(12, 14.6, 23)
@@ -39,15 +38,17 @@ x = np.logspace(-3., 1., 50)
 z = float(sys.argv[2]) #0.5 # 0.3
 
 # rho baryons critical (thought it should be rho_b = fb rho_m = fb omega_m rho_crit)
+#fb = cosmo_params['Omega_b']/cosmo_params['Omega_m']
 #rhogas_c = fb * rho_cz(z) #g/cm3
 #P200m = G_cgs * m*Msol_cgs * 200. * rho_cz(z) * fb /(2.*r200(m,z))
 
 # initialize final arrays
-Pth_arr = np.zeros((len(x), 2, len(mbinc)))
-want_rho = False
+want_rho = True # pick between Pth and rho
 if want_rho:
     rho_arr = np.zeros((len(x), 2, len(mbinc)))
-
+else:
+    Pth_arr = np.zeros((len(x), 2, len(mbinc)))
+    
 # initialize virial radius array
 r200m_kpcs = np.zeros(len(mbinc))
 r200c_kpcs = np.zeros(len(mbinc))
@@ -76,24 +77,26 @@ for k in range(len(mbinc)):
         rho_arr[:, 0, k] = rho1h
         rho_arr[:, 1, k] = rho2h
 
-    # one-halo pressure
-    Pth1h = two.Pth_gnfw(x, m, z) #[g/cm/s2]
-    print("done with one-halo")
-    sys.stdout.flush()
+    else:
+        # one-halo pressure
+        Pth1h = two.Pth_gnfw(x, m, z) #[g/cm/s2]
+        print("done with one-halo")
+        sys.stdout.flush()
     
-    # two-halo pressure
-    Pth2h = []
-    for ix in range(len(x)):
-        Pth2h.append(two.Pth_2h(x[ix], m, z))
-    Pth2h = np.array(Pth2h)  #g/cm3
-    print("done with two-halo")
-    sys.stdout.flush()
+        # two-halo pressure
+        Pth2h = []
+        for ix in range(len(x)):
+            Pth2h.append(two.Pth_2h(x[ix], m, z))
+        Pth2h = np.array(Pth2h)  #g/cm3
+        print("done with two-halo")
+        sys.stdout.flush()
     
-    Pth_arr[:, 0, k] = Pth1h
-    Pth_arr[:, 1, k] = Pth2h
+        Pth_arr[:, 0, k] = Pth1h
+        Pth_arr[:, 1, k] = Pth2h
     
     
 # save arrays
-np.savez(f"data/PthGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", Pth_arr=Pth_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc)
 if want_rho:
     np.savez(f"data/rhoGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", rho_arr=rho_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc)
+else:
+    np.savez(f"data/PthGNFW_z{z:.1}_rank{myrank:d}_{n_ranks:d}.npz", Pth_arr=Pth_arr, rbinc_ratio=x, r200m_kpcs=r200m_kpcs, r200c_kpcs=r200c_kpcs, r200t_kpcs=r200t_kpcs, mbinc_Msuns=mbinc)
